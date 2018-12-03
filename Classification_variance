@@ -1,0 +1,34 @@
+
+from sklearn.linear_model import LogisticRegression
+log = LogisticRegression(solver='lbfgs', multi_class='multinomial')
+ind_shuffle = np.arange(data.shape[0])
+np.random.shuffle(ind_shuffle)
+data_shuffle = data[ind_shuffle, ...]
+labels_shuffle = labels[ind_shuffle]
+dat_train, dat_test, label_train, label_test = train_test_split(data_shuffle, labels_shuffle, train_size=0.7, test_size=0.3, shuffle=False)
+pca2 = PCA(n_components=30)
+pca2.fit(dat_train)
+dat_transf_train = pca2.transform(dat_train)
+dat_transf_test = pca2.transform(dat_test)
+
+class_score = []
+for i in range(1,30):
+    log = LogisticRegression(solver='lbfgs', multi_class='multinomial')
+    log.fit(dat_transf_train[:,:i], label_train)
+    class_score.append(log.score(dat_transf_test[:,:i], label_test))
+
+log.fit(dat_train, label_train)
+all_dat_score = log.score(dat_test, label_test)
+
+fig, ax = plt.subplots()
+
+ax.plot(np.arange(1,i+1), class_score,'x-')
+ax.plot([0,len(class_score)],[all_dat_score, all_dat_score])
+ax.set_xlabel('Number of PCs')
+ax.set_ylabel('Classification accuracy')
+
+ax_var = ax.twinx()
+ax_var.plot(np.arange(1, i+1), np.cumsum(pca2.explained_variance_ratio_[:i])/ np.sum(pca2.explained_variance_ratio_), 'ro-')
+ax_var.set_ylabel('Variance Explained')
+ax_var.set_ylim([0,1])
+fig.legend(['Classification Accuracy','Classification Accuracy (raw data)','Variance explained'])
